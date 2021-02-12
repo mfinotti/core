@@ -5,12 +5,15 @@
   "postCreateCommand": "script/bootstrap",
   "containerEnv": { "DEVCONTAINER": "1" },
   "appPort": 8123,
-  "runArgs": ["-e", "GIT_EDITOR=code --wait"],
+  "runArgs": ["-e", "GIT_EDITOR=code --wait", "--network=host"],
   "extensions": [
     "ms-python.vscode-pylance",
     "visualstudioexptteam.vscodeintellicode",
     "redhat.vscode-yaml",
     "esbenp.prettier-vscode"
+  ],
+  "mounts": [
+    "source=/opt/ls_software,target=/workspaces,type=bind,consistency=cached"
   ],
   // Please keep this file in sync with settings in home-assistant/.vscode/settings.default.json
   "settings": {

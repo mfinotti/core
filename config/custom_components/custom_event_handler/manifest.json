@@ -1,0 +1,6 @@
+{
+    "domain": "custom_event_handler",
+    "name": "Middleware that handle custom events",
+    "documentation": "http://todo",
+    "codeowners": ["@mfinotti"]
+  }

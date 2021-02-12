@@ -1,0 +1,7 @@
+{
+    "domain": "kafka_procuder",
+    "name": "Apache Kafka Producer by Event",
+    "documentation": "http://todo",
+    "requirements": ["aiokafka==0.7.0"],
+    "codeowners": ["@mfinotti"]
+  }

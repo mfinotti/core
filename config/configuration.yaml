@@ -1,0 +1,31 @@
+# Configure a default setup of Home Assistant (frontend, api, etc)
+default_config:
+
+python_script:
+
+custom_event_handler:
+
+kafka_producer:
+  ip_address: localhost
+  port: 9092
+  topic: HASSIO
+
+kafka_consumer:
+  ip_address: localhost
+  port: 9092
+  topic: TEST_CONSUMER
+
+# Text to speech
+tts:
+  - platform: google_translate
+
+group: !include groups.yaml
+automation: !include automations.yaml
+script: !include scripts.yaml
+scene: !include scenes.yaml
+
+logger:
+  default: info
+  logs:
+    homeassistant.components.cloud: debug
+

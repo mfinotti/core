@@ -1,0 +1,7 @@
+{
+    "domain": "kafka_consumer",
+    "name": "Apache Kafka Consumer",
+    "documentation": "http://todo",
+    "requirements": ["aiokafka==0.7.0"],
+    "codeowners": ["@mfinotti"]
+  }
