@@ -10,6 +10,28 @@ class EventTypeEnum(Enum):
 
 class PlatformEnum(Enum):
     STATE = "STATE"
+    EVENT = "EVENT"
+
+
+class EntityActionMessage:
+
+    platform: str
+    label: str
+    value: str
+
+    def __init__(self, data=None):
+        self.platform = data["platform"]
+        self.value = data["value"]
+        self.label = data["label"]
+
+    def getPlatform(self):
+        return self.platform
+
+    def getValue(self):
+        return self.value
+
+    def __str__(self):
+        return str(self.__dict__)
 
 
 class EntityMessage:
@@ -18,6 +40,7 @@ class EntityMessage:
     entityId: str
     label: str
     state: str
+    actions = []
 
     def __init__(self, data=None):
         if None == data:
@@ -30,6 +53,10 @@ class EntityMessage:
 
         if "state" in data:
             self.state = data["state"]
+
+        if "actions" in data:
+            if type(data["actions"]) is list:
+                self.actions.append(EntityActionMessage(data["actions"]))
 
     def __str__(self):
         return str(self.__dict__)
@@ -45,6 +72,9 @@ class EntityMessage:
 
     def getState(self):
         return self.state
+
+    def getActions(self):
+        return self.actions
 
 
 class EventMessage:
@@ -83,26 +113,6 @@ class EventMessage:
 
     def __str__(self):
         return str(self.__dict__)
-
-    def toJsonString(self):
-        stringToReturn = "{"
-        for key in self.__dict__.keys():
-            if len(stringToReturn) > 1:
-                stringToReturn += ","
-
-            if type(self.__getattribute__(key)) == list:
-                listStringToReturn = ""
-                for e in self.__getattribute__(key):
-                    if len(listStringToReturn) > 0:
-                        listStringToReturn += ","
-
-                    listStringToReturn += e.__str__()
-                stringToReturn += '"' + key + '"' + ":[" + listStringToReturn + "]"
-            else:
-                stringToReturn += '"' + key + '"' + ":" + '"' + self.__dict__[key] + '"'
-        stringToReturn += "}"
-
-        return stringToReturn.replace("'", '"')
 
     def getEventType(self):
         return self.eventType

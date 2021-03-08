@@ -4,6 +4,28 @@ default_config:
 python_script:
 
 custom_event_handler:
+  # triggereable entities are in this list
+  entities:
+    - input_boolean.pump_anomaly:
+        # event triggered
+        - NOTICE:
+            # the actions list (may be empty)
+            actions:
+              - platform: EVENT
+                label: 'Spegni irrigazione'
+                value: 'spegniIrrigazioneEvent'
+    - test:
+        - NOTICE:
+            actions:
+              - platform: STATE
+                label: Stato
+                value: 'on'
+              - platform: EVENT
+                label: 'Attiva antifurto'
+                value: 'nameOfTheEvent'
+              - platform: EVENT
+                label: 'Attiva irrigazione'
+                value: 'nameOfTheEvent'
 
 kafka_producer:
   ip_address: localhost
@@ -13,14 +35,79 @@ kafka_producer:
 kafka_consumer:
   ip_address: localhost
   port: 9092
-  topic: TEST_CONSUMER
+  topic: TOSYSTEM_112233
+
+input_text:
+  system_code:
+    name: Identificativo Sistema
+    initial: '112233'
+
+input_boolean:
+  pump:
+    name: Pompa
+    initial: false
+  pump_line_1:
+    name: Linea 1
+    initial: false
+  pump_line_2:
+    name: Linea 2
+    initial: false
+  pump_anomaly:
+    name: Simula Anomalia pompa
+    initial: false
+
+binary_sensor:
+  platform: template
+  sensors:
+    anomaly:
+      friendly_name: Anomalie
+      device_class: problem
+      value_template: >-
+          {% if is_state('input_boolean.pump_anomaly', 'on')
+          %}
+            on
+          {% else %}
+            off
+          {% endif %}
+    pump_state:
+      friendly_name: Pompa
+      device_class: power
+      value_template: >-
+          {% if is_state('input_boolean.pump', 'on')
+            or is_state('input_boolean.pump_line_1', 'on')
+            or is_state('input_boolean.pump_line_2', 'on')
+          %}
+            on
+          {% else %}
+            off
+          {% endif %}
+    line_1_state:
+      friendly_name: Linea 1
+      device_class: power
+      value_template: >-
+          {% if is_state('input_boolean.pump_line_1', 'on')
+          %}
+            on
+          {% else %}
+            off
+          {% endif %}
+    line_2_state:
+      friendly_name: Linea 2
+      device_class: power
+      value_template: >-
+          {% if is_state('input_boolean.pump_line_2', 'on')
+          %}
+            on
+          {% else %}
+            off
+          {% endif %}
 
 # Text to speech
 tts:
   - platform: google_translate
 
 group: !include groups.yaml
-automation: !include automations.yaml
+# automation: !include automations.yaml
 script: !include scripts.yaml
 scene: !include scenes.yaml
 
@@ -29,3 +116,72 @@ logger:
   logs:
     homeassistant.components.cloud: debug
 
+automation:
+  - alias: "Pump 1 on"
+    trigger:
+      platform: state
+      entity_id: input_boolean.pump_line_1
+      to: "on"
+    condition:
+      condition: state
+      entity_id: input_boolean.notify_home
+      state: "on"
+    action:
+      - service: notify.pushbullet
+        data:
+          title: ""
+          message: "Accesa irrigazione sulla Linea 1"
+      - service: input_boolean.turn_on
+        target:
+          entity_id: input_boolean.pump
+      - service: input_boolean.turn_off
+        target:
+          entity_id: input_boolean.pump_line_2
+  - alias: "Pump 2 on"
+    trigger:
+      platform: state
+      entity_id: input_boolean.pump_line_2
+      to: "on"
+    condition:
+      condition: state
+      entity_id: input_boolean.notify_home
+      state: "on"
+    action:
+      - service: notify.pushbullet
+        data:
+          title: ""
+          message: "Accesa irrigazione sulla Linea 2"
+      - service: input_boolean.turn_on
+        target:
+          entity_id: input_boolean.pump
+      - service: input_boolean.turn_off
+        target:
+          entity_id: input_boolean.pump_line_1
+  - alias: "simula anomalia"
+    trigger:
+      platform: state
+      entity_id: input_boolean.pump_anomaly
+      to: "on"
+    action:
+      - event: TO_OUTBOUND_EVENT
+        event_data:
+          entityId: input_boolean.pump_anomaly
+          type: NOTICE
+          message: "Si è verificata un'anomalia sulla pompa"
+  - alias: "Spegni irrigazione event"
+    trigger:
+      platform: event
+      event_type: spegniIrrigazioneEvent
+    action:
+      - service: input_boolean.turn_off
+        target:
+          entity_id: input_boolean.pump
+      - service: input_boolean.turn_off
+        target:
+          entity_id: input_boolean.pump_line_1
+      - service: input_boolean.turn_off
+        target:
+          entity_id: input_boolean.pump_line_2
+      - service: input_boolean.turn_off
+        target:
+          entity_id: input_boolean.pump_anomaly
