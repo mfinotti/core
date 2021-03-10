@@ -115,7 +115,8 @@ class CustomEventHandler:
         elif eventMessage.getEventType() == EventTypeEnum.NOTICE.value:
             return self._processEventTypeNotice(eventMessage)
         elif eventMessage.getEventType() == EventTypeEnum.ALERT.value:
-            return self._processEventTypeAlert(eventMessage)
+            # return self._processEventTypeAlert(eventMessage) BYPASS
+            return self._processEventTypeNotice(eventMessage)
 
         return None
 
